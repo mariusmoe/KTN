@@ -38,7 +38,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
         global history
 
-        self.connection.sendall(history)
+        # self.connection.sendall(history)
         # CONNECTION_LIST.append(self.connection)
         while True:
             data = self.request.recv(1024)
@@ -49,7 +49,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             data = json.loads(data)
 
             # client has sent a message
-            print datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' ' + data['request'] + ': ' + data['content']
+            # print datetime.now().strftime("%Y-%m-%d %H:%M") + ' ' + data['request'] + ': ' + data['content']
 
             if data['request'] == 'login':
                 if self.login(data['content']):
@@ -91,10 +91,10 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
     def compose(self, category, data):
         jdata = {}
-        jdata['timestamp'] = datetime.now().time()
+        jdata['timestamp'] = str(datetime.now().time())
         jdata['sender'] = 'moe'  # this must be fixed
-        jdata['response'] = category
-        jdata['content'] = data
+        jdata['response'] = str(category)
+        jdata['content'] = str(data)
 
         json_data = json.dumps(jdata)
         self.broadcast(json_data)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     No alterations are necessary
     """
-    HOST, PORT = 'localhost', 9992
+    HOST, PORT = 'localhost', 9991
     print 'moServer running...'
 
     # Set up and initiate the TCP server

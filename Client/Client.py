@@ -41,35 +41,40 @@ class Client:
         while True:
             self.data = raw_input("> ")
             # shit starts here
+            print self.data
             i = 0
             if self.data == "help":
                 print "HELP\n---------------\nlogin <username> ------ log in with the given username\n" \
                       "logout -------- log out \nmsg <message> ------ send message \nnames ------- list users in chat" \
                       "\nhelp ------- view help text "
                 continue
-            elif self.data[0:4] == "login":
+            elif self.data[:5] == "login":
                 # make this a login message
-                i = 5
-                self.jdata['request'] = "login"
-            elif self.data[0:5] == "logout":
-                # make this a logout message
                 i = 6
+                self.jdata['request'] = "login"
+            elif self.data[:6] == "logout":
+                # make this a logout message
+                i = 7
                 self.jdata['request'] = "logout"
-            elif self.data[0:2] == "msg":
+            elif self.data[:3] == "msg":
                 # this is a message
-                i = 3
+                i = 4
                 self.jdata['request'] = "msg"
-            elif self.data[0:4] == "names":
+            elif self.data[:5] == "names":
                 # client asks for names
-                i = 5
+                i = 6
                 self.jdata['request'] = "names"
+            else:
+                print "ERROR - no command was recognised"
             # shit ends here (probably not)
             self.jdata['content'] = self.data[i:]       #strip it
             json_data = json.dumps(self.jdata)
-            print json.dumps(json_data, indent=4, sort_keys=True)
+            print json_data
+            # print json.dumps(json_data, indent=4, sort_keys=True)
             self.connection.connect((self.host, self.server_port))
             self.connection.sendall(json_data + "\n")
             self.received = self.connection.recv(1024)
+            print self.received
 
 
     def disconnect(self):
@@ -96,4 +101,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('localhost', 9992)
+    client = Client('localhost', 9991)
