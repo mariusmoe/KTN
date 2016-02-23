@@ -29,6 +29,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         """
         This method handles the connection between a client and the server.
         """
+        # TODO json payload from client needs a field for username, it makes it much easier
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
@@ -56,7 +57,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 else:
                     self.compose('error', 'ERROR during login')
             elif data['request'] == 'logout':
-                if self.logout():
+                if self.logout(data['content']):  # not ideal solution
                     self.compose('info', (data['content'] + ' - logged out '))
                 else:
                     self.compose('error', 'Ouch, this was embracing. Try telling the system admin that error 9 '
@@ -66,6 +67,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 self.compose('message', data['content'])
             elif data['request'] == 'names':
                 self.compose('info', server.users.keys())
+
+    # extended payload could make it possible to send custom messages to sender (like data['username']) ???
+
+    def send(self, data):
+        self.request.send(data)
 
     def login(self, username):
         """
@@ -85,10 +91,10 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
     def compose(self, category, data):
         jdata = {}
-        jdata['timestamp']  = datetime.now().time()
-        jdata['sender']     = 'moe'
-        jdata['response']   = category
-        jdata['content']    = data
+        jdata['timestamp'] = datetime.now().time()
+        jdata['sender'] = 'moe'  # this must be fixed
+        jdata['response'] = category
+        jdata['content'] = data
 
         json_data = json.dumps(jdata)
         self.broadcast(json_data)
