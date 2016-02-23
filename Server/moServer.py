@@ -1,54 +1,19 @@
 # -*- coding: utf-8 -*-
 import SocketServer
-import select
 import json
+from datetime import datetime
 
 """
 Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
 
-CONNECTION_LIST = []
-SOCKET_LIST = []
-RECV_BUFFER = 4096
+
+# CONNECTION_LIST = []
+# SOCKET_LIST = []
+# RECV_BUFFER = 4096
 # PORT = 5000 # ALREADY ASSIGNED
-history = ""
-
-
-def login(username):
-    if username not in CONNECTION_LIST:
-        CONNECTION_LIST.append(username)
-    else:
-        pass
-
-def logout(username):
-    if username in CONNECTION_LIST:
-        CONNECTION_LIST.remove(username)
-
-
-def client(ip, port, message):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ip, port))
-    try:
-        sock.sendall(message)
-        response = sock.recv(1024)
-        print "Received: {}".format(response)
-    finally:
-        sock.close()
-
-
-def broadcast(server_socket, sock, message):
-    for socket in SOCKET_LIST:
-        # send the message only to peer
-        if socket != server_socket and socket != sock :
-            try:
-                socket.send(message)
-            except:
-                # broken socket connection
-                socket.close()
-                # broken socket, remove it
-                if socket in SOCKET_LIST:
-                    SOCKET_LIST.remove(socket)
+# history = ""
 
 
 class ClientHandler(SocketServer.BaseRequestHandler):
@@ -60,9 +25,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
     """
     global history
 
-    def setup(self):
-        CONNECTION_LIST.append([self.client_address[0], self.client_address[1]])
-
     def handle(self):
         """
         This method handles the connection between a client and the server.
@@ -71,23 +33,69 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.port = self.client_address[1]
         self.connection = self.request
 
+        print "new client IP: " + str(self.ip) + " and port: " + str(self.port)
+
+        global history
+
+        self.connection.sendall(history)
         # CONNECTION_LIST.append(self.connection)
         while True:
             data = self.request.recv(1024)
 
-            if not data: break
+            if not data:
+                break
 
             data = json.loads(data)
 
             # client has sent a message
             print datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' ' + data['request'] + ': ' + data['content']
 
-            history += data['content'] + ", "
+            if data['request'] == 'login':
+                if self.login(data['content']):
+                    self.compose('info', ('successful login by: ' + data['content']))
+                else:
+                    self.compose('error', 'ERROR during login')
+            elif data['request'] == 'logout':
+                if self.logout():
+                    self.compose('info', (data['content'] + ' - logged out '))
+                else:
+                    self.compose('error', 'Ouch, this was embracing. Try telling the system admin that error 9 '
+                                          'occured\n'
+                                          ' ERROR logout failed')
+            elif data['request'] == 'msg':
+                self.compose('message', data['content'])
+            elif data['request'] == 'names':
+                self.compose('info', server.users.keys())
 
-            # Send en melding til klienten om at meldingen ble mottatt
+    def login(self, username):
+        """
+        log in user
 
-            self.connection.sendall('Message received')
+        :rtype: bool
+        """
+        if username not in server.users:
+            server.users[username] = self.request
+            return True
+        else:
+            return False
 
+    def logout(self, username):
+        if username in server.users:
+            del server.users[username]
+
+    def compose(self, category, data):
+        jdata = {}
+        jdata['timestamp']  = datetime.now().time()
+        jdata['sender']     = 'moe'
+        jdata['response']   = category
+        jdata['content']    = data
+
+        json_data = json.dumps(jdata)
+        self.broadcast(json_data)
+
+    def broadcast(self, data):
+        for usr in server.users:
+            server.users[usr].sendall(data)
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -97,7 +105,13 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
     No alterations are necessary
     """
+
+    def init(self):
+        self.history = []
+        self.users = {}
+
     allow_reuse_address = True
+
 
 if __name__ == "__main__":
     """
@@ -111,10 +125,6 @@ if __name__ == "__main__":
 
     # Set up and initiate the TCP server
     server = ThreadedTCPServer((HOST, PORT), ClientHandler)
-    SOCKET_LIST.append(server)          # add server socket object to the list of readable connections
+    server.init()
+    # SOCKET_LIST.append(server)          # add server socket object to the list of readable connections
     server.serve_forever()
-
-
-
-
-
