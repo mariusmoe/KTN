@@ -14,7 +14,8 @@ must be written here (e.g. a dictionary for connected clients)
 # RECV_BUFFER = 4096
 # PORT = 5000 # ALREADY ASSIGNED
 # history = ""
-
+history = []
+users = {}
 
 class ClientHandler(SocketServer.BaseRequestHandler):
     """
@@ -41,33 +42,35 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         # self.connection.sendall(history)
         # CONNECTION_LIST.append(self.connection)
         while True:
-            data = self.request.recv(1024)
+            try:
+                data = self.request.recv(1024)
 
-            if not data:
-                break
+                if not data:
+                    break
 
-            data = json.loads(data)
+                data = json.loads(data)
 
-            # client has sent a message
-            # print datetime.now().strftime("%Y-%m-%d %H:%M") + ' ' + data['request'] + ': ' + data['content']
+                # client has sent a message
+                # print datetime.now().strftime("%Y-%m-%d %H:%M") + ' ' + data['request'] + ': ' + data['content']
 
-            if data['request'] == 'login':
-                if self.login(data['content']):
-                    self.compose('info', ('successful login by: ' + data['content']))
-                else:
-                    self.compose('error', 'ERROR during login')
-            elif data['request'] == 'logout':
-                if self.logout(data['content']):  # not ideal solution
-                    self.compose('info', (data['content'] + ' - logged out '))
-                else:
-                    self.compose('error', 'Ouch, this was embracing. Try telling the system admin that error 9 '
-                                          'occured\n'
-                                          ' ERROR logout failed')
-            elif data['request'] == 'msg':
-                self.compose('message', data['content'])
-            elif data['request'] == 'names':
-                self.compose('info', server.users.keys())
-
+                if data['request'] == 'login':
+                    if self.login(data['content']):
+                        self.compose('info', ('successful login by: ' + data['content']))
+                    else:
+                        self.compose('error', 'ERROR during login')
+                elif data['request'] == 'logout':
+                    if self.logout(data['content']):  # not ideal solution
+                        self.compose('info', (data['content'] + ' - logged out '))
+                    else:
+                        self.compose('error', 'Ouch, this was embracing. Try telling the system admin that error 9 '
+                                              'occured '
+                                              ' ERROR logout failed')
+                elif data['request'] == 'msg':
+                    self.compose('message', data['content'])
+                elif data['request'] == 'names':
+                    self.compose('info', server.users.keys())
+            except:
+                pass
     # extended payload could make it possible to send custom messages to sender (like data['username']) ???
 
     def send(self, data):
@@ -79,15 +82,15 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
         :rtype: bool
         """
-        if username not in server.users:
-            server.users[username] = self.request
+        if username not in users:
+            users[username] = self.request
             return True
         else:
             return False
 
     def logout(self, username):
-        if username in server.users:
-            del server.users[username]
+        if username in users:
+            del users[username]
 
     def compose(self, category, data):
         jdata = {}
@@ -100,8 +103,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.broadcast(json_data)
 
     def broadcast(self, data):
-        for usr in server.users:
-            server.users[usr].sendall(data)
+        for usr in users:
+            users[usr].sendall(data)
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -111,11 +114,11 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
     No alterations are necessary
     """
-
+    """
     def init(self):
         self.history = []
         self.users = {}
-
+    """
     allow_reuse_address = True
 
 
@@ -126,11 +129,11 @@ if __name__ == "__main__":
 
     No alterations are necessary
     """
-    HOST, PORT = 'localhost', 9991
+    HOST, PORT = 'localhost', 9988
     print 'moServer running...'
 
     # Set up and initiate the TCP server
     server = ThreadedTCPServer((HOST, PORT), ClientHandler)
-    server.init()
+    # server.init()
     # SOCKET_LIST.append(server)          # add server socket object to the list of readable connections
     server.serve_forever()

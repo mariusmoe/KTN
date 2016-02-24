@@ -25,12 +25,14 @@ class Client:
         self.server_port = server_port
         self.received = ""
         self.out_text = ""
+        """
         try:
             # Connect to server and send data
             self.run()
         finally:
             self.disconnect()
-
+        """
+        self.run()
         print "Sent:     {}".format(self.data)
         print "Received: {}".format(self.received)
 
@@ -38,6 +40,9 @@ class Client:
 
     def run(self):
         print "Type 'help' if stuck"
+        self.connection.connect((self.host, self.server_port))
+        thread1 = MessageReceiver(self, self.connection)      # v2
+        thread1.start()
         while True:
             self.data = raw_input("> ")
             # shit starts here
@@ -66,15 +71,17 @@ class Client:
                 self.jdata['request'] = "names"
             else:
                 print "ERROR - no command was recognised"
+                continue
             # shit ends here (probably not)
             self.jdata['content'] = self.data[i:]       #strip it
             json_data = json.dumps(self.jdata)
-            print json_data
+            print "JSON to be sent: " + json_data
             # print json.dumps(json_data, indent=4, sort_keys=True)
-            self.connection.connect((self.host, self.server_port))
-            self.connection.sendall(json_data + "\n")
-            self.received = self.connection.recv(1024)
-            print self.received
+
+            self.connection.sendall(json_data) # + "\n")
+            # self.received = self.connection.recv(1024)        # v2
+            # print self.received
+        self.disconnect()
 
 
     def disconnect(self):
@@ -101,4 +108,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('localhost', 9991)
+    client = Client('localhost', 9988)
