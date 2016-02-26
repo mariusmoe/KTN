@@ -14,7 +14,8 @@ class MessageParser():
         }
 
     def parse(self, payload):
-        payload = json.load(payload)
+        # print payload
+        payload = json.loads(payload)
 
         if payload['response'] in self.possible_responses:
             return self.possible_responses[payload['response']](payload)
@@ -25,23 +26,20 @@ class MessageParser():
     def parse_error(self, payload):
         # TODO panic !!! there is an error somewhere :o
         # node = payload['response']['stock']['properties']['warehouse']
-        print str(payload)
-        print "there was an error"
-        return payload['content'] + " error"
+        # print payload['timestamp'] + " - " + payload['sender'] + " : " + " error: " + payload['content']
+        return payload['timestamp'] + " - " + payload['sender'] + " : " + payload['content']
 
     def parse_info(self, payload):
-        print str(payload)
-        print "there was info"
-        return payload['content']
+        # print payload['timestamp'] + " - " + payload['sender'] + " : " + " info: " + payload['content']
+        return payload['timestamp'] + " - " + payload['sender'] + " : " + " info: " + payload['content']
 
     def parse_message(self, payload):
-        print str(payload)
-        print "there was a message"
-        return payload['content']
+        # print payload['timestamp'] + " - " + payload['sender'] + " : " + payload['content']
+        return payload['timestamp'] + " - " + payload['sender'] + " : " + payload['content']
 
     def parse_history(self, payload):
-        buffer = ""
-        for message in payload['content']:
-            buffer += memoryview + "\n"
-        return buffer
+        # buffer = ""
+        # for message in payload['content']:
+        #    buffer += memoryview + "\n"
+        return payload
         # Include more methods for handling the different responses...

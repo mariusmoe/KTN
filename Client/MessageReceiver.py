@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
+from MessageParser import MessageParser
 
 
 class MessageReceiver(Thread):
@@ -25,7 +26,9 @@ class MessageReceiver(Thread):
 
     def run(self):
         # TODO: Make MessageReceiver receive and handle payloads
-
+        parser = MessageParser()
         while True:
             self.received = self.connection.recv(1024)        # v2
-            print self.received
+            # print self.received
+
+            print parser.parse(self.received)

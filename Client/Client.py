@@ -32,7 +32,7 @@ class Client:
         finally:
             self.disconnect()
         """
-        self.run()
+        self.run()          # trengs denne å kalles??
         print "Sent:     {}".format(self.data)
         print "Received: {}".format(self.received)
 
@@ -41,15 +41,16 @@ class Client:
     def run(self):
         print "Type 'help' if stuck"
         self.connection.connect((self.host, self.server_port))
-        thread1 = MessageReceiver(self, self.connection)      # v2
+        thread1 = MessageReceiver(self, self.connection)
         thread1.start()
         while True:
-            self.data = raw_input("> ")
+            self.data = raw_input(">>> ")
+            print "\033[A                             \033[A"
             # shit starts here
-            print self.data
+            # print self.data
             i = 0
             if self.data == "help":
-                print "HELP\n---------------\nlogin <username> ------ log in with the given username\n" \
+                print "HELP\n---------------\n\nlogin <username> ------ log in with the given username\n" \
                       "logout -------- log out \nmsg <message> ------ send message \nnames ------- list users in chat" \
                       "\nhelp ------- view help text "
                 continue
@@ -75,7 +76,7 @@ class Client:
             # shit ends here (probably not)
             self.jdata['content'] = self.data[i:]       #strip it
             json_data = json.dumps(self.jdata)
-            print "JSON to be sent: " + json_data
+            # print "JSON to be sent: " + json_data
             # print json.dumps(json_data, indent=4, sort_keys=True)
 
             self.connection.sendall(json_data) # + "\n")
@@ -108,4 +109,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('localhost', 9988)
+    client = Client('localhost', 9986)
