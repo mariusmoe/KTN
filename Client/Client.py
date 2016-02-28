@@ -70,6 +70,10 @@ class Client:
                 # client asks for names
                 i = 6
                 self.jdata['request'] = "names"
+            elif self.data[:7] == "history":
+                # client asks for names
+                i = 8
+                self.jdata['request'] = "history"
             else:
                 print "ERROR - no command was recognised"
                 continue

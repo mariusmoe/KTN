@@ -40,6 +40,5 @@ class MessageParser():
     def parse_history(self, payload):
         # buffer = ""
         # for message in payload['content']:
-        #    buffer += memoryview + "\n"
-        return payload
+        return payload['content']
         # Include more methods for handling the different responses...

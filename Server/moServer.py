@@ -51,15 +51,17 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
                 # handle different requests
                 if data['request'] == 'login':
+                    # print "previously known username: " + self.thisusername + " tied to log in with: " + data['content']
                     if self.login(data['content']):
                         self.thisusername = data['content']
-                        self.compose('server', 'info', ('user: ' + data['content'] + " joined your channel!"))
+                        self.compose('server', 'message', ('user: ' + data['content'] + " joined this channel!"))
                     else:
                         self.compose('server', 'error', 'ERROR during login')
                         # self.logout('server', 'error', ('user: ' + data['content'] + " name error!"))
                 elif data['request'] == 'logout':
-                    if self.logout(self.thisusername):  # not ideal solution
-                        self.compose('server', 'info', (self.thisusername + ' - logged out '))
+                    # print "logout requested"
+                    if self.logout():  # not ideal solution
+                        pass    # logic taken over by logout method
                     else:
                         self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
                 elif data['request'] == 'msg':
@@ -68,6 +70,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 elif data['request'] == 'names':
                     self.compose('server', 'info', users.keys())
                 elif data['request'] == 'history':
+                    print history
                     self.compose('server', 'history', ''.join(history))
             except:
                 pass
@@ -89,23 +92,33 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         :param username:    the username for the user
         :rtype: bool
         """
-        if username in users:
+        if self.thisusername != "":
             # del users[username]
             # self.logout(username)
+            # print "user already logged in"
             return False
         else:
             users[username] = self.request
             return True
 
-    def logout(self, username):
+    def logout(self):
         """
         log out user
 
         :param username: user to be logged out
         :return: bool
         """
-        if username in users:
-            del users[username]
+        # print "username that the server tried to delete: " + self.extrausername
+        # del users[self.extrausername]
+        # print "tried to delete key: " + self.thisusername
+        if self.thisusername in users:
+            # users.pop(self.thisusername, None)
+
+            self.compose('server', 'message', ('user: ' + self.thisusername + " left this channel"))
+            self.compose('server', 'info', "you are now logged out")
+            del users[self.thisusername]
+            # self.thisusername = ""
+            self.thisusername = ""
             return True
         else:
             return False
@@ -127,7 +140,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         jdata['content'] = str(data)
 
         json_data = json.dumps(jdata)
-        if category == 'history' or category == 'error':
+        if category == 'history' or category == 'error' or category == 'info':
             self.send(json_data)
         else:
             self.broadcast(json_data)
