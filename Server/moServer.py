@@ -61,6 +61,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 elif data['request'] == 'logout':
                     # print "logout requested"
                     if self.logout():  # not ideal solution
+                        print "Client with IP: " + str(self.ip) + " : " + str(self.port) + " has logged out successfully"
                         pass    # logic taken over by logout method
                     else:
                         self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
@@ -113,7 +114,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         # print "tried to delete key: " + self.thisusername
         if self.thisusername in users:
             # users.pop(self.thisusername, None)
-
             self.compose('server', 'message', ('user: ' + self.thisusername + " left this channel"))
             self.compose('server', 'info', "you are now logged out")
             del users[self.thisusername]
