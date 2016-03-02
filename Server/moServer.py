@@ -66,13 +66,15 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     else:
                         self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
                 elif data['request'] == 'msg':
-                    history.append(data)
+                    history.append(
+                                {'username': str(self.thisusername),
+                                'timestamp':strftime("%H:%M:%S"),
+                                'message':data['content']})
                     self.compose(str(self.thisusername), 'message', data['content'])
                 elif data['request'] == 'names':
                     self.compose('server', 'info', users.keys())
                 elif data['request'] == 'history':
-                    print history
-                    self.compose('server', 'history', ''.join(history))
+                    self.compose('server', 'history', 'The following history:')
             except:
                 pass
     # extended payload could make it possible to send custom messages to sender (like data['username']) ???
@@ -140,7 +142,21 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         jdata['content'] = str(data)
 
         json_data = json.dumps(jdata)
-        if category == 'history' or category == 'error' or category == 'info':
+
+        if category == 'history':
+            print "sending history"
+            self.send(json_data)
+            print history
+            for hist in history:
+                jdata['timestamp'] = hist['timestamp']
+                jdata['sender'] = hist['username']
+                jdata['response'] = 'message'
+                jdata['content'] = hist['message']
+                json_data = json.dumps(jdata)
+                print json_data
+                print ":((((((((((()))))))))))"
+                self.send(json_data)
+        if category == 'error' or category == 'info':
             self.send(json_data)
         else:
             self.broadcast(json_data)
