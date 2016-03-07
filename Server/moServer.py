@@ -159,10 +159,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 self.send(json_data)
 
         elif category == 'error' or category == 'info':
-            print "printed random bs in other if-statement"
             self.send(json_data)
         else:
-            print "printed random bs in else-statement"
             self.broadcast(json_data)
 
     def broadcast(self, data):
