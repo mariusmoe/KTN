@@ -147,16 +147,17 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         if category == 'history':
             print "sending history"
             self.send(json_data)
-            print history
+            #print history
             for hist in history:
                 jdata['timestamp'] = hist['timestamp']
                 jdata['sender'] = hist['username']
                 jdata['response'] = 'message'
                 jdata['content'] = hist['message']
                 json_data = json.dumps(jdata)
-                print json_data
-                print ":((((((((((()))))))))))"
+                #print json_data
+                #print ":((((((((((()))))))))))"
                 self.send(json_data)
+                time.sleep(0.001)
 
         elif category == 'error' or category == 'info':
             self.send(json_data)
