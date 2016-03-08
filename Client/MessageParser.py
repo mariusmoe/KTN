@@ -1,7 +1,7 @@
 import json
 
 
-class MessageParser():
+class MessageParser:
     def __init__(self):
 
         self.possible_responses = {

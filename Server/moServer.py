@@ -54,6 +54,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 # handle different requests
                 if data['request'] == 'login':
                     # print "previously known username: " + self.thisusername + " tied to log in with: " + data['content']
+                    print (data['content'])
                     if self.login(data['content']):
                         self.thisusername = data['content']
                         self.valid = True
@@ -61,10 +62,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     else:
                         self.compose('server', 'error', 'ERROR during login')
                         # self.logout('server', 'error', ('user: ' + data['content'] + " name error!"))
-                elif data['request'] == 'logout' and self.valid == True:
+                elif data['request'] == 'logout':
                     # print "logout requested"
                     if self.logout():  # not ideal solution
                         print "Client with IP: " + str(self.ip) + " : " + str(self.port) + " has logged out successfully"
+                        self.valid = False
                         pass    # logic taken over by logout method
                     else:
                         self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
@@ -74,8 +76,12 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                                 'timestamp':strftime("%H:%M:%S"),
                                 'message':data['content']})
                     self.compose(str(self.thisusername), 'message', data['content'])
-                elif data['request'] == 'names' and self.valid == True:
-                    self.compose('server', 'info', users.keys())
+                elif data['request'] == 'names':
+                    if self.thisusername == "":
+                        self.compose('server', 'error', "Ouch, this was embracing. Try telling the system admin that " +
+                                                        "error 8 occured ERROR can't send if not logged in")
+                    else:
+                        self.compose('server', 'info', users.keys())
                 elif data['request'] == 'history' and self.valid == True:
                     self.compose('server', 'history', 'The following history:')
             except:
@@ -89,7 +95,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         :param data:
         :return: None
         """
-        users[self.thisusername].sendall(data)
+        self.request.sendall(data)
         #self.request.send(data)
     def login(self, username):
         """
@@ -98,7 +104,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         :param username:    the username for the user
         :rtype: bool
         """
-        if self.thisusername != "":
+        print "data[content]: " + username
+        if self.thisusername != "" or username == '':
             # del users[username]
             # self.logout(username)
             # print "user already logged in"
@@ -159,7 +166,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 #print json_data
                 #print ":((((((((((()))))))))))"
                 self.send(json_data)
-                time.sleep(0.001)
+                time.sleep(0.005)
 
         elif category == 'error' or category == 'info':
             self.send(json_data)
