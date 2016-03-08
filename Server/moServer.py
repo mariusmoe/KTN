@@ -83,7 +83,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
                 #This elif-statement handles the case of not being a valid user
                 elif data['request'] == 'info' or data['request'] == 'history' or data['request'] == 'names' or data['request'] == 'msg' or data['request'] == 'logout' and self.valid == False:
-                    print("Ran the long-ass elif statement")
+                    print("non-valid username handler ran")
                     self.send('You need to be logged in with a username to use this command')
             except:
                 pass
