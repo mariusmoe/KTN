@@ -54,7 +54,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 # handle different requests
                 if data['request'] == 'login':
                     # print "previously known username: " + self.thisusername + " tied to log in with: " + data['content']
-                    print (data['content'])
+                    # print (data['content'])
                     if self.login(data['content']):
                         self.thisusername = data['content']
                         self.valid = True
@@ -108,7 +108,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         :param username:    the username for the user
         :rtype: bool
         """
-        print "data[content]: " + username
+        # print "data[content]: " + username
         if self.thisusername != "" or username == '':
             # del users[username]
             # self.logout(username)
