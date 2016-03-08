@@ -61,10 +61,12 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     else:
                         self.compose('server', 'error', 'ERROR during login')
                         # self.logout('server', 'error', ('user: ' + data['content'] + " name error!"))
+
                 elif data['request'] == 'logout' and self.valid == True:
                     # print "logout requested"
                     if self.logout():  # not ideal solution
                         print "Client with IP: " + str(self.ip) + " : " + str(self.port) + " has logged out successfully"
+                        self.valid = False
                         pass    # logic taken over by logout method
                     else:
                         self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
@@ -78,6 +80,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     self.compose('server', 'info', users.keys())
                 elif data['request'] == 'history' and self.valid == True:
                     self.compose('server', 'history', 'The following history:')
+
+                #This elif-statement handles the case of not being a valid user
+                elif data['request'] == 'info' or data['request'] == 'history' or data['request'] == 'names' or data['request'] == 'msg' or data['request'] == 'logout' and self.valid == False:
+                    print("Ran the long-ass elif statement")
+                    self.send('You need to be logged in with a username to use this command')
             except:
                 pass
     # extended payload could make it possible to send custom messages to sender (like data['username']) ???
@@ -168,7 +175,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
     def broadcast(self, data):
         """
-        sands data to all users connected with a username
+        sends data to all users connected with a username
 
         :param data:    the json object that is to be sent
         :return: None
