@@ -31,6 +31,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.port = self.client_address[1]
         self.connection = self.request
         self.thisusername = ""
+        self.valid = False
 
         print "new client IP: " + str(self.ip) + " : " + str(self.port)
 
@@ -55,26 +56,27 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     # print "previously known username: " + self.thisusername + " tied to log in with: " + data['content']
                     if self.login(data['content']):
                         self.thisusername = data['content']
+                        self.valid = True
                         self.compose('server', 'message', ('user: ' + data['content'] + " joined this channel!"))
                     else:
                         self.compose('server', 'error', 'ERROR during login')
                         # self.logout('server', 'error', ('user: ' + data['content'] + " name error!"))
-                elif data['request'] == 'logout':
+                elif data['request'] == 'logout' and self.valid == True:
                     # print "logout requested"
                     if self.logout():  # not ideal solution
                         print "Client with IP: " + str(self.ip) + " : " + str(self.port) + " has logged out successfully"
                         pass    # logic taken over by logout method
                     else:
                         self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
-                elif data['request'] == 'msg':
+                elif data['request'] == 'msg' and self.valid == True:
                     history.append(
                                 {'username': str(self.thisusername),
                                 'timestamp':strftime("%H:%M:%S"),
                                 'message':data['content']})
                     self.compose(str(self.thisusername), 'message', data['content'])
-                elif data['request'] == 'names':
+                elif data['request'] == 'names' and self.valid == True:
                     self.compose('server', 'info', users.keys())
-                elif data['request'] == 'history':
+                elif data['request'] == 'history' and self.valid == True:
                     self.compose('server', 'history', 'The following history:')
             except:
                 pass
