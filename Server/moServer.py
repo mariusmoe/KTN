@@ -69,7 +69,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         self.valid = False
                         pass    # logic taken over by logout method
                     else:
-                        self.compose('server', 'error', 'Ouch, this was embracing. Try telling the system admin that error 9 occured ERROR logout failed')
+                        self.compose('server', 'error', 'Ouch, this was embarrassing. Try telling the system admin that error 9 occured ERROR logout failed')
                 elif data['request'] == 'msg':
                     if self.valid == True:
                         history.append(
@@ -78,11 +78,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                                     'message':data['content']})
                         self.compose(str(self.thisusername), 'message', data['content'])
                     else:
-                        self.compose('server', 'error', "Ouch, this was embracing. Try telling the system admin that " +
+                        self.compose('server', 'error', "Ouch, this was embarrassing. Try telling the system admin that " +
                                                         "error 7 occured ERROR can't send message if not logged in")
                 elif data['request'] == 'names':
                     if self.thisusername == "":
-                        self.compose('server', 'error', "Ouch, this was embracing. Try telling the system admin that " +
+                        self.compose('server', 'error', "Ouch, this was embarrassing. Try telling the system admin that " +
                                                         "error 8 occured ERROR can't send names if not logged in")
                     else:
                         self.compose('server', 'info', users.keys())
